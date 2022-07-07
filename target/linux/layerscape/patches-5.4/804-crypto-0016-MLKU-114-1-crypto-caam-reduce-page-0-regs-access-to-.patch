@@ -30,7 +30,7 @@ Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
 
 --- a/drivers/crypto/caam/caamalg.c
 +++ b/drivers/crypto/caam/caamalg.c
-@@ -3542,13 +3542,14 @@ int caam_algapi_init(struct device *ctrl
+@@ -3520,13 +3520,14 @@ int caam_algapi_init(struct device *ctrl
  	 * First, detect presence and attributes of DES, AES, and MD blocks.
  	 */
  	if (priv->era < 10) {
@@ -47,7 +47,7 @@ Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
  		des_inst = (cha_inst & CHA_ID_LS_DES_MASK) >>
  			   CHA_ID_LS_DES_SHIFT;
  		aes_inst = cha_inst & CHA_ID_LS_AES_MASK;
-@@ -3558,24 +3559,24 @@ int caam_algapi_init(struct device *ctrl
+@@ -3534,23 +3535,23 @@ int caam_algapi_init(struct device *ctrl
  		ccha_inst = 0;
  		ptha_inst = 0;
  
@@ -73,10 +73,8 @@ Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
  		md_inst = mdha & CHA_VER_NUM_MASK;
 -		ccha_inst = rd_reg32(&priv->ctrl->vreg.ccha) & CHA_VER_NUM_MASK;
 -		ptha_inst = rd_reg32(&priv->ctrl->vreg.ptha) & CHA_VER_NUM_MASK;
--		arc4_inst = rd_reg32(&priv->ctrl->vreg.afha) & CHA_VER_NUM_MASK;
 +		ccha_inst = rd_reg32(&vreg->ccha) & CHA_VER_NUM_MASK;
 +		ptha_inst = rd_reg32(&vreg->ptha) & CHA_VER_NUM_MASK;
-+		arc4_inst = rd_reg32(&vreg->afha) & CHA_VER_NUM_MASK;
  
  		gcm_support = aesa & CHA_VER_MISC_AES_GCM;
  	}
@@ -102,19 +100,20 @@ Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
  		md_inst = mdha & CHA_VER_NUM_MASK;
 --- a/drivers/crypto/caam/caampkc.c
 +++ b/drivers/crypto/caam/caampkc.c
-@@ -1099,10 +1099,10 @@ int caam_pkc_init(struct device *ctrldev
+@@ -1099,11 +1099,11 @@ int caam_pkc_init(struct device *ctrldev
  
  	/* Determine public key hardware accelerator presence. */
- 	if (priv->era < 10)
+ 	if (priv->era < 10) {
 -		pk_inst = (rd_reg32(&priv->ctrl->perfmon.cha_num_ls) &
 +		pk_inst = (rd_reg32(&priv->jr[0]->perfmon.cha_num_ls) &
  			   CHA_ID_LS_PK_MASK) >> CHA_ID_LS_PK_SHIFT;
- 	else
--		pk_inst = rd_reg32(&priv->ctrl->vreg.pkha) & CHA_VER_NUM_MASK;
+ 	} else {
+ 		pkha = rd_reg32(&priv->ctrl->vreg.pkha);
+-		pk_inst = pkha & CHA_VER_NUM_MASK;
 +		pk_inst = rd_reg32(&priv->jr[0]->vreg.pkha) & CHA_VER_NUM_MASK;
  
- 	/* Do not register algorithms if PKHA is not present. */
- 	if (!pk_inst)
+ 		/*
+ 		 * Newer CAAMs support partially disabled functionality. If this is the
 --- a/drivers/crypto/caam/caamrng.c
 +++ b/drivers/crypto/caam/caamrng.c
 @@ -363,10 +363,10 @@ int caam_rng_init(struct device *ctrldev
