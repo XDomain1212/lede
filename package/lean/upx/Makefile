@@ -7,18 +7,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=upx
-PKG_VERSION:=3.96
+PKG_VERSION:=4.2.4
 PKG_RELEASE:=1
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/upx/upx.git
-PKG_SOURCE_VERSION:=d7ba31cab8ce8d95d2c10e88d2ec787ac52005ef
-PKG_MIRROR_HASH:=15b4884dbe35d3b7bda27538429cab92aaeaca006d558deb49f2ef93e3c261b8
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-src.tar.xz
+PKG_SOURCE_URL:=https://github.com/upx/upx/releases/download/v$(PKG_VERSION)
+PKG_HASH:=5ed6561607d27fb4ef346fc19f08a93696fa8fa127081e7a7114068306b8e1c4
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)-src
 
 PKG_MAINTAINER:=Xingwang Liao <kuoruan@gmail.com>
 PKG_LICENSE:=GPL-2.0-only
 PKG_LICENSE_FILES:=COPYING LICENSE
 
+HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/$(PKG_NAME)-$(PKG_VERSION)-src
 HOST_BUILD_DEPENDS:=ucl/host
 MAKE_PATH:=src
 
@@ -46,7 +47,7 @@ define Host/Compile
 endef
 
 define Host/Install
-	$(CP) $(HOST_BUILD_DIR)/src/upx.out $(STAGING_DIR_HOST)/bin/upx
+	$(CP) $(HOST_BUILD_DIR)/build/release/upx $(STAGING_DIR_HOST)/bin/upx
 endef
 
 define Host/Clean
@@ -55,7 +56,7 @@ endef
 
 define Package/upx/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/upx.out $(1)/usr/bin/upx
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/build/release/upx $(1)/usr/bin/upx
 endef
 
 $(eval $(call HostBuild))
